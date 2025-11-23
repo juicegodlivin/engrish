@@ -27,7 +27,6 @@ export const imageRouter = createTRPCRouter({
         const result = await generateImage({ prompt: input.prompt })
 
         // Save to database
-        // @ts-expect-error - Supabase type inference issue, will fix post-deployment
         const { data: image, error } = await ctx.supabaseAdmin!
           .from('generated_images')
           .insert({
@@ -51,7 +50,6 @@ export const imageRouter = createTRPCRouter({
             .eq('user_id', ctx.session.user.id)
             .single()
 
-          // @ts-expect-error - Supabase type inference issue
           await ctx.supabaseAdmin!
             .from('user_stats')
             .upsert({
@@ -177,7 +175,6 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      // @ts-expect-error - Supabase type inference issue
       const { data, error } = await ctx.supabaseAdmin!
         .from('generated_images')
         .update({ is_public: input.isPublic })
@@ -201,7 +198,6 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      // @ts-expect-error - Supabase type inference issue
       const { error } = await ctx.supabaseAdmin!
         .from('generated_images')
         .update({ shared_to_twitter: true })

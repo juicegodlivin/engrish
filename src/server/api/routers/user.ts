@@ -31,7 +31,6 @@ export const userRouter = createTRPCRouter({
         throw new Error('Database not configured')
       }
 
-      // @ts-expect-error - Supabase type inference issue
       const { data, error } = await ctx.supabaseAdmin!
         .from('users')
         .update({

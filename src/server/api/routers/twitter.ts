@@ -33,7 +33,6 @@ export const twitterRouter = createTRPCRouter({
       console.log('📸 Profile picture:', twitterUser.profile_image_url)
 
       // Update user record with full Twitter data INCLUDING profile picture
-      // @ts-expect-error - Supabase type inference issue
       const { data: updatedUser, error } = await ctx.supabaseAdmin!
         .from('users')
         .update({
@@ -132,7 +131,6 @@ export const twitterRouter = createTRPCRouter({
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
     }
 
-      // @ts-expect-error - Supabase type inference issue
       const { error } = await ctx.supabaseAdmin!
         .from('users')
         .update({
@@ -285,7 +283,6 @@ export const twitterRouter = createTRPCRouter({
         indexed_at: new Date().toISOString(),
       }))
 
-      // @ts-expect-error - Supabase type inference issue
       await ctx.supabaseAdmin!
         .from('twitter_mentions')
         .upsert(mentionsData, {
@@ -298,8 +295,6 @@ export const twitterRouter = createTRPCRouter({
     // Update user stats
     const totalScore = mentions.reduce((sum, m) => sum + (m.score || 10), 0)
     
-          // @ts-expect-error - Supabase type inference issue
-          // @ts-expect-error - Supabase type inference issue
           await ctx.supabaseAdmin!
             .from('user_stats')
             .upsert({
