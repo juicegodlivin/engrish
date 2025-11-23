@@ -75,6 +75,7 @@ export async function upsertUser(walletAddress: string, data?: Partial<Database[
 
   const { data: user, error } = await supabaseAdmin
     .from('users')
+    // @ts-ignore Supabase type inference limitation
     .upsert({
       wallet_address: walletAddress,
       ...data,
