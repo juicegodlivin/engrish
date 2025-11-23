@@ -89,6 +89,7 @@ export function useAuth() {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // CRITICAL: Ensure cookies are set
         body: JSON.stringify({
           publicKey: publicKey.toBase58(),
           signature: bs58.encode(signatureBytes),
