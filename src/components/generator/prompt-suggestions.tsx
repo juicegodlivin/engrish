@@ -31,7 +31,7 @@ export function PromptSuggestions({ onSelect }: PromptSuggestionsProps) {
             onClick={() => onSelect(suggestion)}
             className="text-left p-3 text-sm bg-background-darker hover:bg-background-card border border-gray-700 hover:border-brand-red-400 rounded-lg transition-all text-gray-300 hover:text-white"
           >
-            "{suggestion}"
+            &quot;{suggestion}&quot;
           </button>
         ))}
       </div>

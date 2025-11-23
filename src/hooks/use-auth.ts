@@ -129,6 +129,7 @@ export function useAuth() {
       signInWithWallet()
     }, 1000)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, publicKey, authenticated, isAuthenticating, loading])
 
   // Reset on disconnect

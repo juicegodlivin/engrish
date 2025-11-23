@@ -136,7 +136,7 @@ export function TwitterLinkCard() {
               </Button>
             </div>
             <p className="text-xs text-gray-500 text-center">
-              Click "Sync Mentions" to update your score and leaderboard rank
+              Click &quot;Sync Mentions&quot; to update your score and leaderboard rank
             </p>
           </div>
         ) : (
@@ -171,7 +171,7 @@ export function TwitterLinkCard() {
               </p>
             )}
             <p className="text-xs text-gray-500">
-              We'll verify your Twitter account and fetch all @Engrishcoin mentions
+              We&apos;ll verify your Twitter account and fetch all @Engrishcoin mentions
             </p>
           </div>
         )}
