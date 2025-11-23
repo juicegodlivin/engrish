@@ -100,7 +100,40 @@ export function useAuth() {
     }
   }
 
-  // NO AUTO-AUTH - Users must explicitly sign in
+  /**
+   * Auto-authenticate when wallet connects (ONLY if no session exists)
+   */
+  useEffect(() => {
+    // Wait for session check to complete first
+    if (loading) {
+      return
+    }
+
+    // If already authenticated, never trigger
+    if (authenticated) {
+      return
+    }
+
+    // Wallet not connected or not ready
+    if (!connected || !publicKey || !signMessage) {
+      return
+    }
+
+    // Already attempted for this session
+    if (hasAttemptedRef.current) {
+      return
+    }
+
+    // Trigger auth ONCE
+    console.log('🔐 Auto-auth: Wallet connected, no session found. Requesting signature...')
+    hasAttemptedRef.current = true
+    
+    setTimeout(() => {
+      signInWithWallet()
+    }, 500)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, connected, publicKey])
 
   // Reset on disconnect
   useEffect(() => {
