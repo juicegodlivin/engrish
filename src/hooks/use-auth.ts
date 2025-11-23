@@ -104,12 +104,9 @@ export function useAuth() {
       const data = await response.json()
       console.log('✅ USER CREATED:', data.user)
       
-      // Check if cookie was set
-      const cookieCheck = await fetch('/api/auth/session', { credentials: 'include' })
-      const sessionData = await cookieCheck.json()
-      console.log('🍪 Immediate session check after sign-in:', sessionData)
-      
+      // Set user and mark as authenticated to prevent re-auth
       setUser(data.user)
+      hasAttemptedRef.current = true
 
     } catch (error) {
       console.error('❌ Error:', error)
