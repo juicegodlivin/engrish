@@ -11,10 +11,15 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { trpc } from '~/lib/trpc'
 import { updateProfileSchema, type UpdateProfileInput } from '~/lib/validations'
 import { formatWalletAddress } from '~/lib/utils'
+import type { Database } from '~/types/database'
+
+type UserProfile = Database['public']['Tables']['users']['Row']
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = trpc.user.getProfile.useQuery()
   const utils = trpc.useContext()
+  
+  const userProfile: UserProfile | undefined = profile as UserProfile | undefined
 
   const {
     register,
@@ -23,8 +28,8 @@ export default function ProfilePage() {
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      name: profile?.name || '',
-      bio: profile?.bio || '',
+      name: userProfile?.name || '',
+      bio: userProfile?.bio || '',
     },
   })
 
@@ -67,10 +72,10 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="p-4 bg-background-darker rounded-xl font-mono text-sm text-brand-gold-400">
-            {profile?.wallet_address || 'Not connected'}
+            {userProfile?.wallet_address || 'Not connected'}
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Short: {profile?.wallet_address ? formatWalletAddress(profile.wallet_address) : 'N/A'}
+            Short: {userProfile?.wallet_address ? formatWalletAddress(userProfile.wallet_address) : 'N/A'}
           </p>
         </CardContent>
       </Card>
@@ -142,13 +147,13 @@ export default function ProfilePage() {
           <div className="flex justify-between">
             <span className="text-gray-400">Member Since:</span>
             <span className="text-white">
-              {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+              {userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : 'N/A'}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Twitter Linked:</span>
             <span className="text-white">
-              {profile?.twitter_username ? `@${profile.twitter_username}` : 'Not linked'}
+              {userProfile?.twitter_username ? `@${userProfile.twitter_username}` : 'Not linked'}
             </span>
           </div>
         </CardContent>
