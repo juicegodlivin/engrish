@@ -59,12 +59,15 @@ export async function POST(req: NextRequest) {
       userData = await upsertUser(publicKey, {
         name: `User ${publicKey.slice(0, 4)}`,
       })
+      if (!userData) {
+        throw new Error('Failed to create user')
+      }
       console.log('User created:', userData.id)
     } else {
       console.log('User found:', userData.id)
     }
 
-    const user: User = userData as User
+    const user: User = userData
 
     // Create JWT
     const token = await new SignJWT({
