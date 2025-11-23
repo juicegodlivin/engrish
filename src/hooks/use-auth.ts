@@ -103,14 +103,19 @@ export function useAuth() {
    * Auto-authenticate when wallet connects
    */
   useEffect(() => {
+    // CRITICAL: Don't auto-auth if loading (session check in progress)
+    if (loading) {
+      console.log('⏭️  Waiting for session check to complete...')
+      return
+    }
+
     // Don't auto-auth if any of these conditions are true
-    if (!connected || !publicKey || !signMessage || authenticated || isAuthenticating || loading) {
+    if (!connected || !publicKey || !signMessage || authenticated || isAuthenticating) {
       console.log('⏭️  Skipping auto-auth:', { 
         connected, 
         hasPublicKey: !!publicKey, 
         authenticated, 
-        isAuthenticating, 
-        loading 
+        isAuthenticating
       })
       return
     }
