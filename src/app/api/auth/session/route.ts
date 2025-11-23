@@ -10,8 +10,10 @@ const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fall
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('auth-token')?.value
+    const allCookies = req.cookies.getAll()
 
     console.log('🔍 Session check - has token:', !!token)
+    console.log('🍪 All cookies:', allCookies.map(c => c.name))
 
     if (!token) {
       console.log('❌ No auth-token cookie found')

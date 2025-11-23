@@ -109,7 +109,13 @@ export async function POST(req: NextRequest) {
       path: '/',
     })
 
-    console.log('Authentication complete! Cookie set.')
+    console.log('✅ Authentication complete! Cookie set.')
+    console.log('🍪 Cookie settings:', {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      domain: 'auto'
+    })
 
     return response
   } catch (error) {
