@@ -189,12 +189,19 @@ export const imageRouter = createTRPCRouter({
 
       if (error) throw error
 
-      // Update user stats
+      // Update user stats - increment images_shared counter
+      const { data: currentUserStats } = await ctx.supabaseAdmin!
+        .from('user_stats')
+        .select('images_shared')
+        .eq('user_id', ctx.session.user.id)
+        .single()
+
       await ctx.supabaseAdmin!
         .from('user_stats')
         // @ts-ignore Supabase type inference limitation
         .update({
-          images_shared: ctx.supabaseAdmin!.rpc('user_stats.images_shared') + 1,
+          // @ts-ignore Supabase type inference limitation
+          images_shared: (currentUserStats?.images_shared || 0) + 1,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', ctx.session.user.id)
