@@ -1,18 +1,6 @@
 import { NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
-
-// In-memory nonce storage (in production, use Redis or database)
-const nonceStore = new Map<string, { nonce: string; timestamp: number }>()
-
-// Clean up old nonces (older than 5 minutes)
-function cleanupOldNonces() {
-  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
-  for (const [key, value] of nonceStore.entries()) {
-    if (value.timestamp < fiveMinutesAgo) {
-      nonceStore.delete(key)
-    }
-  }
-}
+import { storeNonce } from '~/lib/nonce-store'
 
 export async function POST(req: Request) {
   try {
@@ -27,13 +15,7 @@ export async function POST(req: Request) {
     const nonce = randomBytes(16).toString('hex') // 32 character hex string (alphanumeric)
     
     // Store nonce with timestamp
-    nonceStore.set(publicKey, {
-      nonce,
-      timestamp: Date.now(),
-    })
-
-    // Cleanup old nonces
-    cleanupOldNonces()
+    storeNonce(publicKey, nonce)
 
     console.log('🎲 Generated nonce for wallet:', publicKey.slice(0, 8))
 
@@ -45,25 +27,5 @@ export async function POST(req: Request) {
       { status: 500 }
     )
   }
-}
-
-// Export the nonce store for verification
-export function getNonce(publicKey: string): string | null {
-  const stored = nonceStore.get(publicKey)
-  if (!stored) return null
-  
-  // Check if nonce is still valid (less than 5 minutes old)
-  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
-  if (stored.timestamp < fiveMinutesAgo) {
-    nonceStore.delete(publicKey)
-    return null
-  }
-  
-  return stored.nonce
-}
-
-// Remove nonce after verification
-export function consumeNonce(publicKey: string): void {
-  nonceStore.delete(publicKey)
 }
 
