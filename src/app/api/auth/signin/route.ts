@@ -52,22 +52,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create user in Supabase
-    let userData = await getUserByWalletAddress(publicKey)
+    let user: User
+    const existingUser = await getUserByWalletAddress(publicKey)
     
-    if (!userData) {
+    if (!existingUser) {
       console.log('User not found, creating new user...')
-      userData = await upsertUser(publicKey, {
+      const newUser = await upsertUser(publicKey, {
         name: `User ${publicKey.slice(0, 4)}`,
       })
-      if (!userData) {
+      if (!newUser) {
         throw new Error('Failed to create user')
       }
-      console.log('User created:', userData.id)
+      user = newUser as User
+      console.log('User created:', user.id)
     } else {
-      console.log('User found:', userData.id)
+      user = existingUser as User
+      console.log('User found:', user.id)
     }
-
-    const user: User = userData
 
     // Create JWT
     const token = await new SignJWT({
