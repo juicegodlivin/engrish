@@ -23,6 +23,7 @@ export const imageRouter = createTRPCRouter({
         const result = await generateImage({ prompt: input.prompt })
 
         // Save to database
+        // @ts-ignore Supabase type inference limitation with conditional types
         const { data: image, error } = await ctx.supabaseAdmin
           .from('generated_images')
           .insert({
