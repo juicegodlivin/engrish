@@ -94,6 +94,7 @@ export const imageRouter = createTRPCRouter({
 
       const hasMore = data.length > input.limit
       const items = hasMore ? data.slice(0, -1) : data
+      // @ts-ignore Supabase type inference limitation
       const nextCursor = hasMore ? data[data.length - 2]?.created_at : undefined
 
       return {
@@ -126,6 +127,7 @@ export const imageRouter = createTRPCRouter({
 
       const hasMore = data.length > input.limit
       const items = hasMore ? data.slice(0, -1) : data
+      // @ts-ignore Supabase type inference limitation
       const nextCursor = hasMore ? data[data.length - 2]?.created_at : undefined
 
       return {
