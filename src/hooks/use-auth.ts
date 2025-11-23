@@ -102,6 +102,12 @@ export function useAuth() {
 
       const data = await response.json()
       console.log('✅ USER CREATED:', data.user)
+      
+      // Check if cookie was set
+      const cookieCheck = await fetch('/api/auth/session', { credentials: 'include' })
+      const sessionData = await cookieCheck.json()
+      console.log('🍪 Immediate session check after sign-in:', sessionData)
+      
       setUser(data.user)
 
     } catch (error) {
