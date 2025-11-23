@@ -9,15 +9,26 @@ import { Card, CardContent } from '~/components/ui/card'
 import { Button} from '~/components/ui/button'
 
 type LeaderboardEntry = {
-  twitter_user_id: string
-  twitter_username: string
-  mention_count: number
+  userId: string
+  username: string
+  mentionCount: number
+  totalScore: number
+  avatar?: string
+  name?: string
   rank: number
+}
+
+type LeaderboardData = {
+  items: LeaderboardEntry[]
+  page: number
+  totalPages: number
+  totalUsers: number
+  hasMore: boolean
 }
 
 export function LeaderboardTable() {
   const [page, setPage] = React.useState(1)
-  const { data, isLoading, refetch } = trpc.leaderboard.getTopMentioners.useQuery({ page, limit: 50 })
+  const { data: rawData, isLoading, refetch } = trpc.leaderboard.getTopMentioners.useQuery({ page, limit: 50 })
   const { data: userRank } = trpc.leaderboard.getUserRank.useQuery()
   const utils = trpc.useContext()
 
@@ -28,7 +39,8 @@ export function LeaderboardTable() {
     },
   })
 
-  const leaderboard: LeaderboardEntry[] = (data?.items as LeaderboardEntry[]) || []
+  const data = rawData as LeaderboardData | undefined
+  const leaderboard: LeaderboardEntry[] = data?.items || []
   const totalPages = data?.totalPages || 1
   const totalUsers = data?.totalUsers || 0
 
