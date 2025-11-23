@@ -20,20 +20,37 @@ export function useAuth() {
   useEffect(() => {
     let isMounted = true
     
-    console.log('🔍 Checking existing session...')
+    // FIRST: Try to restore from localStorage (faster, more reliable)
+    try {
+      const savedUser = localStorage.getItem('engrish-user')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        console.log('✅ Restored session from localStorage:', userData.walletAddress)
+        setUser(userData)
+        hasAttemptedRef.current = true
+        setLoading(false)
+        return
+      }
+    } catch (err) {
+      console.warn('Failed to restore from localStorage:', err)
+    }
+    
+    // SECOND: Check server session (cookie-based)
+    console.log('🔍 Checking server session...')
     fetch('/api/auth/session', {
-      credentials: 'include', // Ensure cookies are sent
+      credentials: 'include',
     })
       .then((res) => res.json())
       .then((data) => {
-        if (!isMounted) return // Prevent double-setting in StrictMode
+        if (!isMounted) return
         
         if (data.user) {
-          console.log('✅ Found existing session:', data.user.walletAddress)
+          console.log('✅ Found server session:', data.user.walletAddress)
           setUser(data.user)
-          hasAttemptedRef.current = true // Mark as authenticated to prevent auto-auth
+          localStorage.setItem('engrish-user', JSON.stringify(data.user))
+          hasAttemptedRef.current = true
         } else {
-          console.log('❌ No existing session found')
+          console.log('❌ No server session found')
         }
       })
       .catch((err) => {
@@ -104,6 +121,9 @@ export function useAuth() {
       const data = await response.json()
       console.log('✅ USER CREATED:', data.user)
       
+      // Save to localStorage for persistence
+      localStorage.setItem('engrish-user', JSON.stringify(data.user))
+      
       // Set user and mark as authenticated to prevent re-auth
       setUser(data.user)
       hasAttemptedRef.current = true
@@ -165,6 +185,7 @@ export function useAuth() {
   const logout = async () => {
     try {
       await fetch('/api/auth/signout', { method: 'POST' })
+      localStorage.removeItem('engrish-user') // Clear localStorage
       await disconnect()
       setUser(null)
       hasAttemptedRef.current = false
