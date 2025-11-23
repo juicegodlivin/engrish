@@ -23,6 +23,7 @@ export const userRouter = createTRPCRouter({
   updateProfile: protectedProcedure
     .input(updateProfileSchema)
     .mutation(async ({ ctx, input }) => {
+      // @ts-ignore Supabase type inference limitation
       const { data, error } = await ctx.supabaseAdmin
         .from('users')
         .update({
