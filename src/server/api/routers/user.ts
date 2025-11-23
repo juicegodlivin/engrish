@@ -7,11 +7,7 @@ export const userRouter = createTRPCRouter({
    * Get current user profile
    */
   getProfile: protectedProcedure.query(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new Error('Database not configured')
-    }
-
-    const { data, error } = await ctx.supabaseAdmin!
+    const { data, error } = await ctx.supabaseAdmin
       .from('users')
       .select('*')
       .eq('id', ctx.session.user.id)
@@ -27,11 +23,7 @@ export const userRouter = createTRPCRouter({
   updateProfile: protectedProcedure
     .input(updateProfileSchema)
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new Error('Database not configured')
-      }
-
-      const { data, error } = await ctx.supabaseAdmin!
+      const { data, error } = await ctx.supabaseAdmin
         .from('users')
         .update({
           ...input,
@@ -49,11 +41,7 @@ export const userRouter = createTRPCRouter({
    * Get user stats
    */
   getUserStats: protectedProcedure.query(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new Error('Database not configured')
-    }
-
-    const { data, error } = await ctx.supabaseAdmin!
+    const { data, error } = await ctx.supabaseAdmin
       .from('user_stats')
       .select('*')
       .eq('user_id', ctx.session.user.id)
@@ -78,12 +66,8 @@ export const userRouter = createTRPCRouter({
    * Delete user account (optional - use with caution)
    */
   deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new Error('Database not configured')
-    }
-
     // This will cascade delete all related data
-    const { error } = await ctx.supabaseAdmin!
+    const { error } = await ctx.supabaseAdmin
       .from('users')
       .delete()
       .eq('id', ctx.session.user.id)

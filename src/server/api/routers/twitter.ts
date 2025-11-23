@@ -13,10 +13,6 @@ export const twitterRouter = createTRPCRouter({
   linkAccount: protectedProcedure
     .input(linkTwitterSchema)
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
       console.log('🔗 Linking Twitter account:', input.username)
 
       // Verify that the Twitter user exists and get full data
@@ -33,7 +29,7 @@ export const twitterRouter = createTRPCRouter({
       console.log('📸 Profile picture:', twitterUser.profile_image_url)
 
       // Update user record with full Twitter data INCLUDING profile picture
-      const { data: updatedUser, error } = await ctx.supabaseAdmin!
+      const { data: updatedUser, error } = await ctx.supabaseAdmin
         .from('users')
         .update({
           twitter_id: twitterUser.id,
@@ -85,7 +81,7 @@ export const twitterRouter = createTRPCRouter({
           indexed_at: new Date().toISOString(),
         }))
 
-        const { error: insertError } = await ctx.supabaseAdmin!
+        const { error: insertError } = await ctx.supabaseAdmin
           .from('twitter_mentions')
           .upsert(mentionsData, {
             onConflict: 'tweet_id',
@@ -127,11 +123,7 @@ export const twitterRouter = createTRPCRouter({
    * Unlink Twitter account
    */
   unlinkAccount: protectedProcedure.mutation(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-    }
-
-      const { error } = await ctx.supabaseAdmin!
+    const { error } = await ctx.supabaseAdmin
         .from('users')
         .update({
           twitter_id: null,
@@ -168,11 +160,7 @@ export const twitterRouter = createTRPCRouter({
    * Get user's mentions (requires Twitter linked)
    */
   getUserMentions: protectedProcedure.query(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-    }
-
-    const { data: user } = await ctx.supabaseAdmin!
+    const { data: user } = await ctx.supabaseAdmin
       .from('users')
       .select('twitter_username')
       .eq('id', ctx.session.user.id)
@@ -213,12 +201,8 @@ export const twitterRouter = createTRPCRouter({
    * Sync user mentions (refresh their mentions and scores)
    */
   syncUserMentions: protectedProcedure.mutation(async ({ ctx }) => {
-    if (!ctx.supabaseAdmin) {
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-    }
-
     // Get user's Twitter info
-    const { data: user } = await ctx.supabaseAdmin!
+    const { data: user } = await ctx.supabaseAdmin
       .from('users')
       .select('twitter_id, twitter_username')
       .eq('id', ctx.session.user.id)

@@ -76,17 +76,38 @@ export const createTRPCRouter = t.router
 export const publicProcedure = t.procedure
 
 /**
- * Protected procedure - requires authentication
+ * Protected procedure - requires authentication AND database
  */
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not authenticated' })
   }
 
+  if (!ctx.supabaseAdmin) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not configured' })
+  }
+
   return next({
     ctx: {
       ...ctx,
       session: { ...ctx.session, user: ctx.session.user },
+      supabaseAdmin: ctx.supabaseAdmin, // Now guaranteed non-null
+    },
+  })
+})
+
+/**
+ * Public procedure with database access
+ */
+export const publicDatabaseProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.supabaseAdmin) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not configured' })
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      supabaseAdmin: ctx.supabaseAdmin, // Now guaranteed non-null
     },
   })
 })

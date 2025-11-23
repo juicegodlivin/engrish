@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createTRPCRouter, protectedProcedure, publicProcedure, rateLimitProcedure } from '../trpc'
+import { createTRPCRouter, protectedProcedure, publicDatabaseProcedure, rateLimitProcedure } from '../trpc'
 import { imageGenerationSchema, paginationSchema } from '~/lib/validations'
 import { generateImage } from '~/server/services/replicate'
 import { TRPCError } from '@trpc/server'
@@ -18,16 +18,12 @@ export const imageRouter = createTRPCRouter({
   generate: rateLimitProcedure(5, 60000)
     .input(imageGenerationSchema)
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not configured' })
-      }
-
       try {
         // Generate image with Replicate
         const result = await generateImage({ prompt: input.prompt })
 
         // Save to database
-        const { data: image, error } = await ctx.supabaseAdmin!
+        const { data: image, error } = await ctx.supabaseAdmin
           .from('generated_images')
           .insert({
             user_id: ctx.session.user.id,
@@ -44,13 +40,13 @@ export const imageRouter = createTRPCRouter({
 
         // Update user stats (don't fail the whole request if this fails)
         try {
-          const { data: currentStats } = await ctx.supabaseAdmin!
+          const { data: currentStats } = await ctx.supabaseAdmin
             .from('user_stats')
             .select('images_generated')
             .eq('user_id', ctx.session.user.id)
             .single()
 
-          await ctx.supabaseAdmin!
+          await ctx.supabaseAdmin
             .from('user_stats')
             .upsert({
               user_id: ctx.session.user.id,
@@ -78,11 +74,7 @@ export const imageRouter = createTRPCRouter({
   getUserImages: protectedProcedure
     .input(paginationSchema)
     .query(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
-      let query = ctx.supabaseAdmin!
+      let query = ctx.supabaseAdmin
         .from('generated_images')
         .select('*')
         .eq('user_id', ctx.session.user.id)
@@ -111,14 +103,10 @@ export const imageRouter = createTRPCRouter({
   /**
    * Get public gallery images
    */
-  getPublicGallery: publicProcedure
+  getPublicGallery: publicDatabaseProcedure
     .input(paginationSchema)
     .query(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
-      let query = ctx.supabaseAdmin!
+      let query = ctx.supabaseAdmin
         .from('generated_images')
         .select('*, users!inner(name, avatar, wallet_address)')
         .eq('is_public', true)
@@ -150,11 +138,7 @@ export const imageRouter = createTRPCRouter({
   deleteImage: protectedProcedure
     .input(z.object({ imageId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
-      const { error } = await ctx.supabaseAdmin!
+      const { error } = await ctx.supabaseAdmin
         .from('generated_images')
         .delete()
         .eq('id', input.imageId)
@@ -171,11 +155,7 @@ export const imageRouter = createTRPCRouter({
   toggleVisibility: protectedProcedure
     .input(z.object({ imageId: z.string().uuid(), isPublic: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
-      const { data, error } = await ctx.supabaseAdmin!
+      const { data, error } = await ctx.supabaseAdmin
         .from('generated_images')
         .update({ is_public: input.isPublic })
         .eq('id', input.imageId)
@@ -194,11 +174,7 @@ export const imageRouter = createTRPCRouter({
   markShared: protectedProcedure
     .input(z.object({ imageId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.supabaseAdmin) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-      }
-
-      const { error } = await ctx.supabaseAdmin!
+      const { error } = await ctx.supabaseAdmin
         .from('generated_images')
         .update({ shared_to_twitter: true })
         .eq('id', input.imageId)
