@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure, rateLimitProcedu
 import { imageGenerationSchema, paginationSchema } from '~/lib/validations'
 import { generateImage } from '~/server/services/replicate'
 import { TRPCError } from '@trpc/server'
+import type { Database } from '~/types/database'
 
 export const imageRouter = createTRPCRouter({
   /**
@@ -26,16 +27,18 @@ export const imageRouter = createTRPCRouter({
         const result = await generateImage({ prompt: input.prompt })
 
         // Save to database
+        const insertData: Database['public']['Tables']['generated_images']['Insert'] = {
+          user_id: ctx.session.user.id,
+          prompt: input.prompt,
+          image_url: result.imageUrl,
+          replicate_id: result.id || null,
+          is_public: true,
+          shared_to_twitter: false,
+        }
+        
         const { data: image, error } = await ctx.supabaseAdmin!
           .from('generated_images')
-          .insert({
-            user_id: ctx.session.user.id,
-            prompt: input.prompt,
-            image_url: result.imageUrl,
-            replicate_id: result.id || null,
-            is_public: true,
-            shared_to_twitter: false,
-          })
+          .insert(insertData)
           .select()
           .single()
 
