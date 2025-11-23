@@ -200,7 +200,7 @@ export const leaderboardRouter = createTRPCRouter({
   /**
    * Refresh leaderboard (manually trigger cache refresh)
    */
-  refreshLeaderboard: publicProcedure.mutation(async () => {
+  refreshLeaderboard: publicDatabaseProcedure.mutation(async () => {
     const cacheKey = CACHE_KEYS.LEADERBOARD
 
     // Fetch fresh data
