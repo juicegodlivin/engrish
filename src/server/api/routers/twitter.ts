@@ -82,11 +82,10 @@ export const twitterRouter = createTRPCRouter({
           indexed_at: new Date().toISOString(),
         }))
 
-        // @ts-ignore Supabase type inference limitation
-        const { error: insertError } =       // @ts-ignore Supabase type inference limitation
-      await ctx.supabaseAdmin
-        .from('twitter_mentions')
-        .upsert(mentionsData, {
+        const { error: insertError } = await ctx.supabaseAdmin
+          .from('twitter_mentions')
+          // @ts-ignore Supabase type inference limitation
+          .upsert(mentionsData, {
             onConflict: 'tweet_id',
           })
 
