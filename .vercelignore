@@ -1,0 +1,12 @@
+# Files to ignore when deploying to Vercel
+.git
+node_modules
+.next
+.env.local
+*.md
+!README.md
+.cursor
+BUILD_CHECKLIST.md
+CURSOR_QUICK_START.md
+ENGRISH_BUILD_CONTEXT.md
+

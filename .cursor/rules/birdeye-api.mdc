@@ -1,0 +1,276 @@
+---
+description: You are an expert developer specializing in Birdeye API integration with a focus on cost optimization, security, and production-ready implementations. Follow these standards for all Birdeye API work:
+
+## AUTHENTICATION AND CONFIGURATION
+
+**Always use proper authentication:**
+- Include X-API-KEY header in every REST request
+- Include x-chain header (solana, ethereum, bsc, arbitrum, avalanche, base, optimism, polygon, zksync, sui)
+- Store API keys in environment variables, never hardcode
+- For WebSocket: wss://public-api.birdeye.so/socket/{chain}?x-api-key=YOUR_KEY
+- Base URL: https://public-api.birdeye.so
+
+**Rate limits by tier:**
+- Standard: 1 rps, 30K CUs
+- Starter: 15 rps, 3M CUs
+- Premium: 50 rps / 1K rpm, 10M CUs
+- Business: 100 rps / 1.5K rpm, 70M CUs
+- Wallet APIs: 5 rps / 75 rpm (all tiers)
+
+## COST OPTIMIZATION (CRITICAL)
+
+**Always prioritize cost efficiency:**
+- Use batch endpoints: /defi/multi_price (up to 100 tokens vs 100 calls)
+- Business+ batch endpoints: /defi/v3/token/meta-data/multiple (50 tokens), /market-data/multiple (50), /pair/overview/multiple (20)
+- Use specific endpoints over expensive ones: /defi/price (10 CUs) not /defi/token_overview (50 CUs)
+- Use /defi/v3/token/meta-data/single (1 CU) for metadata only
+
+**Caching strategy (mandatory):**
+- Token metadata: 24 hours (rarely changes)
+- Token prices: 30-60 seconds
+- Token security: 12-24 hours
+- Historical data: cache indefinitely (immutable)
+- Wallet portfolios: 5-10 minutes
+- Use Redis/Memcached for hot cache
+
+**Switch to WebSocket for real-time needs:**
+- WebSocket available on Business+ packages only
+- Cost per byte (0.003-0.08 CUPB) vs per-call REST
+- More efficient for continuous monitoring of multiple tokens
+- Max 100 tokens per connection (Business: 500 connections, Business Classic: 1000)
+
+## ERROR HANDLING AND RETRY LOGIC
+
+**HTTP status code handling:**
+- 400 (Bad Request): Validate inputs, don't retry
+- 401 (Unauthorized): Check API key, don't retry
+- 403 (Forbidden): Insufficient permissions, don't retry
+- 429 (Too Many Requests): Exponential backoff, retry
+- 500+ (Server Error): Exponential backoff, retry
+
+**Exponential backoff pattern (429 and 5xx only):**
+```javascript
+const delays = [1000, 2000, 4000, 8000, 16000, 30000];
+for (let i = 0; i < delays.length; i++) {
+  try {
+    return await makeRequest();
+  } catch (error) {
+    if (error.status === 429 || error.status >= 500) {
+      if (i < delays.length - 1) await sleep(delays[i]);
+      else throw error;
+    } else throw error;
+  }
+}
+```
+
+**Circuit breaker pattern:**
+- Track consecutive failures (threshold: 5)
+- Open circuit for 60 seconds when exceeded
+- Transition to half-open for test requests
+- Close when tests succeed
+
+## PRODUCTION-READY PATTERNS
+
+**Connection management:**
+- Use HTTP connection pooling (max 50 sockets)
+- Set timeouts: 5-10s connect, 10-15s read
+- Enable keepAlive for persistent connections
+- Implement request queuing for rate limiting
+
+**Client-side rate limiting (mandatory):**
+- Implement token bucket or leaky bucket algorithm
+- Respect account-wide limits (not per key)
+- Track wallet API calls separately (5 rps limit)
+- Queue requests when approaching limits
+
+**WebSocket stability:**
+- Ping-pong heartbeat every 30 seconds
+- Exponential backoff for reconnection (1s, 2s, 4s, 8s, max 30s)
+- Re-subscribe to all events after reconnection
+- Implement fallback to REST if WebSocket fails repeatedly
+
+**Security best practices:**
+- Never expose API keys in frontend/mobile apps
+- Route through backend proxy that injects keys
+- Apply IP restrictions from BDS Dashboard
+- Rotate keys quarterly
+- Generate separate keys for dev/staging/production
+
+## KEY ENDPOINTS AND CU COSTS
+
+**Price endpoints:**
+- /defi/price (10 CUs): Single token price
+- /defi/multi_price (batch): Multiple token prices
+- /defi/history_price (20 CUs): Historical prices
+- /defi/v3/price/stats/single (25 CUs): Detailed stats
+
+**Token information:**
+- /defi/v3/token/meta-data/single (1 CU): Name, symbol, logo, decimals
+- /defi/v3/token/market-data (10 CUs): Liquidity, market cap, FDV
+- /defi/v3/token/trade-data/single (10 CUs): Volume, trades, price changes
+- /defi/token_overview (50 CUs): Comprehensive data (use sparingly)
+- /defi/token_security (50 CUs): Security analysis
+
+**OHLCV data:**
+- /defi/ohlcv (25 CUs, max 1000 records): Candlestick data
+- /defi/v3/ohlcv (dynamic CU, Starter+): Enhanced with sub-minute intervals (Solana: 1s, 15s, 30s)
+- Intervals: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
+
+**Trades and transactions:**
+- /defi/v3/txs/recent (10 CUs): Most recent trades (lowest latency)
+- /defi/v3/txs (25 CUs): Recent trades
+- /defi/v3/token/txs (25 CUs): Token transaction history
+
+**Wallet endpoints (beta, Solana only, 1000 CUs each):**
+- /v1/wallet/token_list: Portfolio with balances and USD values
+- /v1/wallet/multichain_token_list: Multi-chain portfolios
+- /wallet/v2/pnl: Profit/loss per wallet and token
+
+**Utility endpoints:**
+- /defi/v3/search (1 CU): Search tokens, markets, traders
+- /defi/v3/token/list (50 CUs): Advanced token filtering
+
+## WEBSOCKET SUBSCRIPTIONS (Business+ only)
+
+**Available subscriptions:**
+- SUBSCRIBE_PRICE (0.003 CUPB): Real-time price updates with OHLCV
+- SUBSCRIBE_TXS (0.05 CUPB): Real-time transaction updates
+- SUBSCRIBE_TOKEN_STATS (0.0004 CUPB): Token overview data
+- SUBSCRIBE_OHLCV (0.08 CUPB): Live candlestick updates
+- SUBSCRIBE_WALLET_TXS (0.006 CUPB): Wallet activity tracking
+- SUBSCRIBE_TOKEN_NEW_LISTING (0.004 CUPB): New token listings
+- SUBSCRIBE_NEW_PAIR (0.005 CUPB): New trading pairs
+
+**Connection pattern:**
+```javascript
+const ws = new WebSocket('wss://public-api.birdeye.so/socket/solana?x-api-key=' + API_KEY);
+ws.onopen = () => {
+  ws.send(JSON.stringify({
+    type: 'SUBSCRIBE_PRICE',
+    data: { chartType: '1m', address: 'TOKEN_ADDRESS' }
+  }));
+};
+```
+
+## CHAIN-SPECIFIC CONSIDERATIONS
+
+**Solana advantages:**
+- Sub-minute OHLCV (1s, 15s, 30s)
+- All wallet APIs (beta)
+- Token holder lists
+- Meme token endpoints
+- Historical price by Unix timestamp
+
+**Sui limitations:**
+- No wallet APIs
+- No token security
+- No token creation info
+- Limited market cap/supply data
+
+**EVM chains (Ethereum, BSC, Arbitrum, Avalanche, Base, Optimism, Polygon, zkSync):**
+- Consistent behavior across chains
+- Use hex addresses (0x...)
+- Standard ERC-20 tokens
+
+## TESTING WITHOUT WASTING CREDITS
+
+**Development strategies:**
+- Start with Standard (free) package for initial testing
+- Implement comprehensive caching during development
+- Mock historical data completely in tests
+- Use fixtures of API responses for unit tests
+- Test with single tokens before batch operations
+- Monitor CU consumption via BDS Dashboard: https://bds.birdeye.so/user/metrics
+
+**Testing configuration:**
+- Generate separate API keys for dev/staging/production
+- Implement "test mode" flag that uses mock data
+- Log all API calls with CU costs during development
+- Set alerts at 70-80% of monthly quota
+
+## COMMON PITFALLS TO AVOID
+
+**Authentication errors:**
+- Verify X-API-KEY header is present and correct
+- Check for whitespace/newlines in API key
+- WebSocket requires key as query parameter, not header
+
+**Cost mistakes:**
+- Don't use /defi/token_overview when only price needed
+- Don't make sequential calls for multiple tokens—use batch
+- Don't poll REST at high frequency—use WebSocket (Business+)
+- Don't re-fetch historical data—cache indefinitely
+
+**Rate limit issues:**
+- Remember limits are per account, not per key
+- Implement client-side throttling before hitting limits
+- Wallet APIs have stricter 5 rps / 75 rpm limits
+- Use batch endpoints to reduce call frequency
+
+**Package restrictions:**
+- Starter cannot access "multiple" endpoints except multi_price
+- Business+ required for batch endpoints and WebSocket
+- Wallet APIs are Solana-only (beta)
+- Some endpoints are blockchain-specific
+
+## REQUEST/RESPONSE FORMATS
+
+**Standard request headers:**
+```javascript
+{
+  'X-API-KEY': process.env.BIRDEYE_API_KEY,
+  'x-chain': 'solana',
+  'accept': 'application/json'
+}
+```
+
+**Standard success response:**
+```json
+{
+  "success": true,
+  "data": {
+    "value": 24.586420063533236,
+    "updateUnixTime": 1675506000,
+    "updateHumanTime": "2023-02-04T12:00:00Z"
+  }
+}
+```
+
+**Error response:**
+```json
+{
+  "success": false,
+  "message": "Error description"
+}
+```
+
+## MONITORING AND OBSERVABILITY
+
+**Log every API call with:**
+- Request ID (UUID)
+- Timestamp
+- Endpoint and chain
+- Status code
+- Response time (ms)
+- CU cost
+- Error message if failed
+
+**Track metrics:**
+- API calls per minute/hour/day
+- Error rate percentage (target <1%)
+- Latency percentiles (p50, p95, p99)
+- CU consumption per endpoint
+- Rate limit utilization
+- Cache hit rate (target >80%)
+
+**Set alerts for:**
+- Error rate >5%
+- Rate limit >80%
+- CU consumption >80% of quota
+- Circuit breaker opening
+- API latency p95 >2s
+
+Always prioritize cost efficiency, implement proper error handling, use appropriate caching, and follow security best practices. Monitor usage actively and optimize before upgrading package tiers.
+
+alwaysApply: false
+---
