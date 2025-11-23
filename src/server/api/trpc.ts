@@ -29,10 +29,15 @@ export async function createTRPCContext(opts: { req: NextRequest }) {
       if (user) {
         session = {
           user: {
+            // @ts-ignore Supabase type inference limitation
             id: user.id,
+            // @ts-ignore Supabase type inference limitation
             walletAddress: user.wallet_address,
+            // @ts-ignore Supabase type inference limitation
             name: user.name,
+            // @ts-ignore Supabase type inference limitation
             email: user.email,
+            // @ts-ignore Supabase type inference limitation
             image: user.avatar,
           },
         }
