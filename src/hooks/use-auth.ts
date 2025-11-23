@@ -12,6 +12,7 @@ export function useAuth() {
   const [user, setUser] = useState<any>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [sessionChecked, setSessionChecked] = useState(false)
   const hasAttemptedRef = useRef(false)
 
   const authenticated = !!user
@@ -20,14 +21,15 @@ export function useAuth() {
   useEffect(() => {
     let isMounted = true
     
-    // FIRST: Try to restore from localStorage (faster, more reliable)
+    // FIRST: Try to restore from localStorage (synchronous, instant)
     try {
       const savedUser = localStorage.getItem('engrish-user')
       if (savedUser) {
         const userData = JSON.parse(savedUser)
         console.log('✅ Restored session from localStorage:', userData.walletAddress)
         setUser(userData)
-        hasAttemptedRef.current = true
+        hasAttemptedRef.current = true // Prevent auto-auth
+        setSessionChecked(true) // Mark as checked
         setLoading(false)
         return
       }
@@ -60,6 +62,7 @@ export function useAuth() {
       .finally(() => {
         if (!isMounted) return
         console.log('✅ Session check complete')
+        setSessionChecked(true) // Mark as checked
         setLoading(false)
       })
     
@@ -140,13 +143,14 @@ export function useAuth() {
    * Auto-authenticate when wallet connects (ONLY if no session exists)
    */
   useEffect(() => {
-    // Wait for session check to complete first
-    if (loading) {
+    // CRITICAL: Wait for session check to complete
+    if (!sessionChecked) {
       return
     }
 
     // If already authenticated, never trigger
     if (authenticated) {
+      console.log('✅ Already authenticated, skipping auto-auth')
       return
     }
 
@@ -157,6 +161,7 @@ export function useAuth() {
 
     // Already attempted for this session
     if (hasAttemptedRef.current) {
+      console.log('✅ Already attempted auth, skipping')
       return
     }
 
@@ -169,7 +174,7 @@ export function useAuth() {
     }, 500)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, connected, publicKey])
+  }, [sessionChecked, authenticated, connected, publicKey])
 
   // Reset on disconnect
   useEffect(() => {
