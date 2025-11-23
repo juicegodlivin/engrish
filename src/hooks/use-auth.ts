@@ -25,6 +25,7 @@ export function useAuth() {
         if (data.user) {
           console.log('✅ Found existing session:', data.user.walletAddress)
           setUser(data.user)
+          hasAttemptedRef.current = true // Mark as authenticated to prevent auto-auth
         } else {
           console.log('❌ No existing session found')
         }
@@ -99,43 +100,7 @@ export function useAuth() {
     }
   }
 
-  /**
-   * Auto-authenticate when wallet connects
-   */
-  useEffect(() => {
-    // CRITICAL: Don't auto-auth if loading (session check in progress)
-    if (loading) {
-      console.log('⏭️  Waiting for session check to complete...')
-      return
-    }
-
-    // Don't auto-auth if any of these conditions are true
-    if (!connected || !publicKey || !signMessage || authenticated || isAuthenticating) {
-      console.log('⏭️  Skipping auto-auth:', { 
-        connected, 
-        hasPublicKey: !!publicKey, 
-        authenticated, 
-        isAuthenticating
-      })
-      return
-    }
-
-    // Don't attempt twice
-    if (hasAttemptedRef.current) {
-      console.log('⏭️  Already attempted auth')
-      return
-    }
-
-    console.log('✅ Wallet connected and no session! Starting auth...')
-    hasAttemptedRef.current = true
-
-    // Wait for wallet to be ready
-    setTimeout(() => {
-      signInWithWallet()
-    }, 1000)
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, publicKey, authenticated, isAuthenticating, loading])
+  // NO AUTO-AUTH - Users must explicitly sign in
 
   // Reset on disconnect
   useEffect(() => {
