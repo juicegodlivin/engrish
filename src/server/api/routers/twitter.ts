@@ -101,6 +101,7 @@ export const twitterRouter = createTRPCRouter({
         try {
           await ctx.supabaseAdmin
             .from('user_stats')
+            // @ts-ignore Supabase type inference limitation
             .upsert({
               user_id: ctx.session.user.id,
               twitter_mentions: userMentions.length,
