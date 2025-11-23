@@ -110,6 +110,7 @@ export const leaderboardRouter = createTRPCRouter({
       .eq('id', ctx.session.user.id)
       .single()
 
+    // @ts-ignore Supabase type inference limitation
     if (!user?.twitter_username) {
       return {
         rank: null,
@@ -125,6 +126,7 @@ export const leaderboardRouter = createTRPCRouter({
       .select('score')
       .eq('user_id', ctx.session.user.id)
 
+    // @ts-ignore Supabase type inference limitation
     const totalScore = userMentions?.reduce((sum, m) => sum + (m.score || 10), 0) || 0
     const mentionCount = userMentions?.length || 0
 
