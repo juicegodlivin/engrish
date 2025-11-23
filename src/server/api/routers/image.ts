@@ -21,14 +21,12 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not configured' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-
       try {
         // Generate image with Replicate
         const result = await generateImage({ prompt: input.prompt })
 
         // Save to database
-        const { data: image, error } = await supabaseAdmin
+        const { data: image, error } = await ctx.supabaseAdmin!
           .from('generated_images')
           .insert({
             user_id: ctx.session.user.id,
@@ -45,13 +43,13 @@ export const imageRouter = createTRPCRouter({
 
         // Update user stats (don't fail the whole request if this fails)
         try {
-          const { data: currentStats } = await supabaseAdmin
+          const { data: currentStats } = await ctx.supabaseAdmin!
             .from('user_stats')
             .select('images_generated')
             .eq('user_id', ctx.session.user.id)
             .single()
 
-          await supabaseAdmin
+          await ctx.supabaseAdmin!
             .from('user_stats')
             .upsert({
               user_id: ctx.session.user.id,
@@ -83,8 +81,7 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      let query = supabaseAdmin
+      let query = ctx.supabaseAdmin!
         .from('generated_images')
         .select('*')
         .eq('user_id', ctx.session.user.id)
@@ -120,8 +117,7 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      let query = supabaseAdmin
+      let query = ctx.supabaseAdmin!
         .from('generated_images')
         .select('*, users!inner(name, avatar, wallet_address)')
         .eq('is_public', true)
@@ -157,8 +153,7 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      const { error } = await supabaseAdmin
+      const { error } = await ctx.supabaseAdmin!
         .from('generated_images')
         .delete()
         .eq('id', input.imageId)
@@ -179,8 +174,7 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await ctx.supabaseAdmin!
         .from('generated_images')
         .update({ is_public: input.isPublic })
         .eq('id', input.imageId)
@@ -203,8 +197,7 @@ export const imageRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      const { error } = await supabaseAdmin
+      const { error } = await ctx.supabaseAdmin!
         .from('generated_images')
         .update({ shared_to_twitter: true })
         .eq('id', input.imageId)
@@ -213,10 +206,10 @@ export const imageRouter = createTRPCRouter({
       if (error) throw error
 
       // Update user stats
-      await supabaseAdmin
+      await ctx.supabaseAdmin!
         .from('user_stats')
         .update({
-          images_shared: supabaseAdmin.rpc('user_stats.images_shared') + 1,
+          images_shared: ctx.supabaseAdmin!.rpc('user_stats.images_shared') + 1,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', ctx.session.user.id)

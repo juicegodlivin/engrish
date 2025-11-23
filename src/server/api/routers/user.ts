@@ -11,8 +11,7 @@ export const userRouter = createTRPCRouter({
       throw new Error('Database not configured')
     }
 
-    const supabaseAdmin = ctx.supabaseAdmin
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await ctx.supabaseAdmin!
       .from('users')
       .select('*')
       .eq('id', ctx.session.user.id)
@@ -32,8 +31,7 @@ export const userRouter = createTRPCRouter({
         throw new Error('Database not configured')
       }
 
-      const supabaseAdmin = ctx.supabaseAdmin
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await ctx.supabaseAdmin!
         .from('users')
         .update({
           ...input,
@@ -55,8 +53,7 @@ export const userRouter = createTRPCRouter({
       throw new Error('Database not configured')
     }
 
-    const supabaseAdmin = ctx.supabaseAdmin
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await ctx.supabaseAdmin!
       .from('user_stats')
       .select('*')
       .eq('user_id', ctx.session.user.id)
@@ -85,9 +82,8 @@ export const userRouter = createTRPCRouter({
       throw new Error('Database not configured')
     }
 
-    const supabaseAdmin = ctx.supabaseAdmin
     // This will cascade delete all related data
-    const { error } = await supabaseAdmin
+    const { error } = await ctx.supabaseAdmin!
       .from('users')
       .delete()
       .eq('id', ctx.session.user.id)
