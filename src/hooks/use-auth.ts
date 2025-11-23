@@ -18,10 +18,16 @@ export function useAuth() {
 
   // Check session on mount ONCE
   useEffect(() => {
+    let isMounted = true
+    
     console.log('🔍 Checking existing session...')
-    fetch('/api/auth/session')
+    fetch('/api/auth/session', {
+      credentials: 'include', // Ensure cookies are sent
+    })
       .then((res) => res.json())
       .then((data) => {
+        if (!isMounted) return // Prevent double-setting in StrictMode
+        
         if (data.user) {
           console.log('✅ Found existing session:', data.user.walletAddress)
           setUser(data.user)
@@ -31,12 +37,18 @@ export function useAuth() {
         }
       })
       .catch((err) => {
+        if (!isMounted) return
         console.error('Session check error:', err)
       })
       .finally(() => {
+        if (!isMounted) return
         console.log('✅ Session check complete')
         setLoading(false)
       })
+    
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   /**
