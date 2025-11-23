@@ -181,6 +181,7 @@ export const twitterRouter = createTRPCRouter({
     // Search for mentions from this user
     // @ts-ignore Supabase type inference limitation
     const mentions = await searchMentions(
+      // @ts-ignore Supabase type inference limitation
       `from:${user.twitter_username} (@Engrishcoin OR #Engrishcoin OR $ENGRISH)`,
       50
     )
