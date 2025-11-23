@@ -91,7 +91,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     ctx: {
       ...ctx,
       session: { ...ctx.session, user: ctx.session.user },
-      supabaseAdmin: ctx.supabaseAdmin, // Now guaranteed non-null
+      supabaseAdmin: ctx.supabaseAdmin as NonNullable<typeof ctx.supabaseAdmin>,
     },
   })
 })
@@ -107,7 +107,7 @@ export const publicDatabaseProcedure = t.procedure.use(async ({ ctx, next }) => 
   return next({
     ctx: {
       ...ctx,
-      supabaseAdmin: ctx.supabaseAdmin, // Now guaranteed non-null
+      supabaseAdmin: ctx.supabaseAdmin as NonNullable<typeof ctx.supabaseAdmin>,
     },
   })
 })
