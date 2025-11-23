@@ -6,9 +6,13 @@ import { Navbar } from '~/components/layout/navbar'
 import { Footer } from '~/components/layout/footer'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Card, CardContent } from '~/components/ui/card'
+import type { Database } from '~/types/database'
+
+type GeneratedImage = Database['public']['Tables']['generated_images']['Row']
 
 export default function GalleryPage() {
   const { data, isLoading } = trpc.image.getPublicGallery.useQuery({ limit: 30 })
+  const images: GeneratedImage[] = (data?.items as GeneratedImage[]) || []
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background-darker to-background-dark">
@@ -26,9 +30,9 @@ export default function GalleryPage() {
 
           {isLoading && <LoadingSpinner size="lg" text="Loading gallery..." />}
 
-          {data && data.items.length > 0 && (
+          {images.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.items.map((image: any) => (
+              {images.map((image) => (
                 <Card key={image.id} className="overflow-hidden group">
                   <div className="relative aspect-square">
                     <Image

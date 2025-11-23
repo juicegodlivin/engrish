@@ -3,6 +3,9 @@
 import { Image, Share2, Trophy, Twitter } from 'lucide-react'
 import { Card, CardContent } from '~/components/ui/card'
 import { trpc } from '~/lib/trpc'
+import type { Database } from '~/types/database'
+
+type UserStats = Database['public']['Tables']['user_stats']['Row']
 
 // Loading skeleton for stats
 function StatsSkeleton() {
@@ -22,12 +25,15 @@ function StatsSkeleton() {
 }
 
 export function StatsOverview() {
-  const { data: stats, isLoading } = trpc.user.getUserStats.useQuery(undefined, {
+  const { data: statsData, isLoading } = trpc.user.getUserStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   })
-  const { data: rank, isLoading: rankLoading } = trpc.leaderboard.getUserRank.useQuery(undefined, {
+  const { data: rankData, isLoading: rankLoading } = trpc.leaderboard.getUserRank.useQuery(undefined, {
     staleTime: 10 * 60 * 1000, // Cache rank for 10 minutes
   })
+  
+  const stats: UserStats | undefined = statsData as UserStats | undefined
+  const rank = rankData as { rank: number | null } | undefined
 
   // Show skeleton on initial load only
   if (isLoading && !stats) {

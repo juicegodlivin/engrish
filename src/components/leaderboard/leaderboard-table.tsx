@@ -6,7 +6,14 @@ import { Trophy, ChevronLeft, ChevronRight } from 'lucide-react'
 import { trpc } from '~/lib/trpc'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Card, CardContent } from '~/components/ui/card'
-import { Button } from '~/components/ui/button'
+import { Button} from '~/components/ui/button'
+
+type LeaderboardEntry = {
+  twitter_user_id: string
+  twitter_username: string
+  mention_count: number
+  rank: number
+}
 
 export function LeaderboardTable() {
   const [page, setPage] = React.useState(1)
@@ -21,7 +28,7 @@ export function LeaderboardTable() {
     },
   })
 
-  const leaderboard = data?.items || []
+  const leaderboard: LeaderboardEntry[] = (data?.items as LeaderboardEntry[]) || []
   const totalPages = data?.totalPages || 1
   const totalUsers = data?.totalUsers || 0
 

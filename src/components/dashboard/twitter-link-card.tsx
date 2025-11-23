@@ -7,14 +7,18 @@ import { Input } from '~/components/ui/input'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { trpc } from '~/lib/trpc'
+import type { Database } from '~/types/database'
+
+type UserProfile = Database['public']['Tables']['users']['Row']
 
 export function TwitterLinkCard() {
   const [username, setUsername] = useState('')
   const utils = trpc.useContext()
 
-  const { data: profile, isLoading } = trpc.user.getProfile.useQuery(undefined, {
+  const { data: profileData, isLoading } = trpc.user.getProfile.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   })
+  const profile: UserProfile | undefined = profileData as UserProfile | undefined
   const isLinked = !!profile?.twitter_username
 
   const linkMutation = trpc.twitter.linkAccount.useMutation({
