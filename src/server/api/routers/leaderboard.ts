@@ -48,6 +48,7 @@ export const leaderboardRouter = createTRPCRouter({
             name?: string
           }>()
           
+          // @ts-ignore Supabase type inference limitation
           mentions?.forEach((mention: any) => {
             const existing = userScores.get(mention.twitter_user_id)
             if (existing) {
@@ -184,6 +185,7 @@ export const leaderboardRouter = createTRPCRouter({
     )
 
     // Find user's rank
+    // @ts-ignore Supabase type inference limitation
     const userIndex = leaderboard.findIndex((entry) => entry.userId === user.twitter_id)
     const rank = userIndex >= 0 ? userIndex + 1 : null
 
