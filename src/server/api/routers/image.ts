@@ -52,6 +52,7 @@ export const imageRouter = createTRPCRouter({
             // @ts-ignore Supabase type inference limitation
             .upsert({
               user_id: ctx.session.user.id,
+              // @ts-ignore Supabase type inference limitation
               images_generated: (currentStats?.images_generated || 0) + 1,
               updated_at: new Date().toISOString(),
             })
