@@ -92,8 +92,8 @@ export default function MyImagesPage() {
             <p className="text-xl text-gray-400 mb-6">
               No images generated yet ser!
             </p>
-            <Button href="/generate" asChild>
-              <a>Generate Your First Meme</a>
+            <Button asChild>
+              <a href="/generate">Generate Your First Meme</a>
             </Button>
           </CardContent>
         </Card>
