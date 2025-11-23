@@ -8,8 +8,6 @@ import superjson from 'superjson'
 import { ZodError } from 'zod'
 import { jwtVerify } from 'jose'
 import { getUserByWalletAddress, supabase, supabaseAdmin } from '../db/client'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '~/types/database'
 
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production')
 
@@ -46,8 +44,8 @@ export async function createTRPCContext(opts: { req: NextRequest }) {
 
   return {
     session,
-    supabase: supabase as SupabaseClient<Database> | null,
-    supabaseAdmin: supabaseAdmin as SupabaseClient<Database> | null,
+    supabase,
+    supabaseAdmin,
     req: opts.req,
   }
 }

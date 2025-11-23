@@ -19,7 +19,7 @@ if (!isSupabaseConfigured) {
  * Uses anon key with RLS policies
  * Returns null if not configured
  */
-export const supabase = isSupabaseConfigured
+export const supabase: ReturnType<typeof createClient<Database>> | null = isSupabaseConfigured
   ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         persistSession: false, // We use NextAuth for session management
@@ -31,7 +31,7 @@ export const supabase = isSupabaseConfigured
  * Supabase admin client for server-side operations
  * Bypasses RLS policies - use with caution!
  */
-export const supabaseAdmin =
+export const supabaseAdmin: ReturnType<typeof createClient<Database>> | null =
   isSupabaseConfigured && supabaseServiceKey
     ? createClient<Database>(supabaseUrl!, supabaseServiceKey, {
         auth: {
