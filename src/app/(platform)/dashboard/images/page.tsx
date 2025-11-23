@@ -6,6 +6,9 @@ import { trpc } from '~/lib/trpc'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
+import type { Database } from '~/types/database'
+
+type GeneratedImage = Database['public']['Tables']['generated_images']['Row']
 
 export default function MyImagesPage() {
   const { data, isLoading } = trpc.image.getUserImages.useQuery({ limit: 20 })
@@ -72,7 +75,7 @@ export default function MyImagesPage() {
     )
   }
 
-  const images = data?.items || []
+  const images: GeneratedImage[] = data?.items || []
 
   return (
     <div className="p-8 space-y-8 min-h-screen">
