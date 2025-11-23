@@ -47,9 +47,9 @@ export const imageRouter = createTRPCRouter({
             .eq('user_id', ctx.session.user.id)
             .single()
 
-          // @ts-ignore Supabase type inference limitation
           await ctx.supabaseAdmin
             .from('user_stats')
+            // @ts-ignore Supabase type inference limitation
             .upsert({
               user_id: ctx.session.user.id,
               images_generated: (currentStats?.images_generated || 0) + 1,
@@ -157,9 +157,9 @@ export const imageRouter = createTRPCRouter({
   toggleVisibility: protectedProcedure
     .input(z.object({ imageId: z.string().uuid(), isPublic: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
-      // @ts-ignore Supabase type inference limitation
       const { data, error } = await ctx.supabaseAdmin
         .from('generated_images')
+        // @ts-ignore Supabase type inference limitation
         .update({ is_public: input.isPublic })
         .eq('id', input.imageId)
         .eq('user_id', ctx.session.user.id)
@@ -177,9 +177,9 @@ export const imageRouter = createTRPCRouter({
   markShared: protectedProcedure
     .input(z.object({ imageId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      // @ts-ignore Supabase type inference limitation
       const { error } = await ctx.supabaseAdmin
         .from('generated_images')
+        // @ts-ignore Supabase type inference limitation
         .update({ shared_to_twitter: true })
         .eq('id', input.imageId)
         .eq('user_id', ctx.session.user.id)
@@ -187,9 +187,9 @@ export const imageRouter = createTRPCRouter({
       if (error) throw error
 
       // Update user stats
-      // @ts-ignore Supabase type inference limitation
       await ctx.supabaseAdmin!
         .from('user_stats')
+        // @ts-ignore Supabase type inference limitation
         .update({
           images_shared: ctx.supabaseAdmin!.rpc('user_stats.images_shared') + 1,
           updated_at: new Date().toISOString(),

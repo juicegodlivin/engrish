@@ -29,9 +29,9 @@ export const twitterRouter = createTRPCRouter({
       console.log('📸 Profile picture:', twitterUser.profile_image_url)
 
       // Update user record with full Twitter data INCLUDING profile picture
-      // @ts-ignore Supabase type inference limitation
       const { data: updatedUser, error } = await ctx.supabaseAdmin
         .from('users')
+        // @ts-ignore Supabase type inference limitation
         .update({
           twitter_id: twitterUser.id,
           twitter_username: twitterUser.username,
@@ -126,9 +126,9 @@ export const twitterRouter = createTRPCRouter({
    * Unlink Twitter account
    */
   unlinkAccount: protectedProcedure.mutation(async ({ ctx }) => {
-      // @ts-ignore Supabase type inference limitation
       const { error } = await ctx.supabaseAdmin
         .from('users')
+        // @ts-ignore Supabase type inference limitation
         .update({
           twitter_id: null,
           twitter_username: null,
@@ -271,9 +271,9 @@ export const twitterRouter = createTRPCRouter({
         indexed_at: new Date().toISOString(),
       }))
 
-      // @ts-ignore Supabase type inference limitation
       await ctx.supabaseAdmin!
         .from('twitter_mentions')
+        // @ts-ignore Supabase type inference limitation
         .upsert(mentionsData, {
           onConflict: 'tweet_id',
         })
@@ -284,9 +284,9 @@ export const twitterRouter = createTRPCRouter({
     // Update user stats
     const totalScore = mentions.reduce((sum, m) => sum + (m.score || 10), 0)
     
-          // @ts-ignore Supabase type inference limitation
           await ctx.supabaseAdmin!
             .from('user_stats')
+            // @ts-ignore Supabase type inference limitation
             .upsert({
               user_id: ctx.session.user.id,
               twitter_mentions: mentions.length,
