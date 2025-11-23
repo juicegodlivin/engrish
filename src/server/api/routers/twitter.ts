@@ -17,6 +17,8 @@ export const twitterRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
+      const supabaseAdmin = ctx.supabaseAdmin
+
       console.log('🔗 Linking Twitter account:', input.username)
 
       // Verify that the Twitter user exists and get full data
@@ -33,7 +35,7 @@ export const twitterRouter = createTRPCRouter({
       console.log('📸 Profile picture:', twitterUser.profile_image_url)
 
       // Update user record with full Twitter data INCLUDING profile picture
-      const { data: updatedUser, error } = await ctx.supabaseAdmin
+      const { data: updatedUser, error } = await supabaseAdmin
         .from('users')
         .update({
           twitter_id: twitterUser.id,
@@ -85,7 +87,7 @@ export const twitterRouter = createTRPCRouter({
           indexed_at: new Date().toISOString(),
         }))
 
-        const { error: insertError } = await ctx.supabaseAdmin
+        const { error: insertError } = await supabaseAdmin
           .from('twitter_mentions')
           .upsert(mentionsData, {
             onConflict: 'tweet_id',
@@ -131,7 +133,8 @@ export const twitterRouter = createTRPCRouter({
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
     }
 
-    const { error } = await ctx.supabaseAdmin
+    const supabaseAdmin = ctx.supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('users')
       .update({
         twitter_id: null,
@@ -172,7 +175,8 @@ export const twitterRouter = createTRPCRouter({
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
     }
 
-    const { data: user } = await ctx.supabaseAdmin
+    const supabaseAdmin = ctx.supabaseAdmin
+    const { data: user } = await supabaseAdmin
       .from('users')
       .select('twitter_username')
       .eq('id', ctx.session.user.id)
@@ -217,8 +221,9 @@ export const twitterRouter = createTRPCRouter({
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
     }
 
+    const supabaseAdmin = ctx.supabaseAdmin
     // Get user's Twitter info
-    const { data: user } = await ctx.supabaseAdmin
+    const { data: user } = await supabaseAdmin
       .from('users')
       .select('twitter_id, twitter_username')
       .eq('id', ctx.session.user.id)
@@ -283,7 +288,7 @@ export const twitterRouter = createTRPCRouter({
         indexed_at: new Date().toISOString(),
       }))
 
-      await ctx.supabaseAdmin
+      await supabaseAdmin
         .from('twitter_mentions')
         .upsert(mentionsData, {
           onConflict: 'tweet_id',
@@ -295,13 +300,13 @@ export const twitterRouter = createTRPCRouter({
     // Update user stats
     const totalScore = mentions.reduce((sum, m) => sum + (m.score || 10), 0)
     
-    await ctx.supabaseAdmin
-      .from('user_stats')
-      .upsert({
-        user_id: ctx.session.user.id,
-        twitter_mentions: mentions.length,
-        updated_at: new Date().toISOString(),
-      })
+          await supabaseAdmin
+            .from('user_stats')
+            .upsert({
+              user_id: ctx.session.user.id,
+              twitter_mentions: mentions.length,
+              updated_at: new Date().toISOString(),
+            })
 
     console.log(`✅ Synced ${mentions.length} mentions, ${totalScore} points`)
 

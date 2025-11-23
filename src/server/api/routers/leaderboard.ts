@@ -19,13 +19,14 @@ export const leaderboardRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
       }
 
+      const supabaseAdmin = ctx.supabaseAdmin
       const page = input?.page || 1
       const limit = input?.limit || 50
       const offset = (page - 1) * limit
 
       console.log(`🏆 Fetching leaderboard page ${page} (${limit} per page)`)
       
-      const { data: mentions, error: queryError } = await ctx.supabaseAdmin
+      const { data: mentions, error: queryError } = await supabaseAdmin
         .from('twitter_mentions')
         .select(`
           twitter_user_id,
@@ -112,7 +113,8 @@ export const leaderboardRouter = createTRPCRouter({
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
     }
 
-    const { data: user } = await ctx.supabaseAdmin
+    const supabaseAdmin = ctx.supabaseAdmin
+    const { data: user } = await supabaseAdmin
       .from('users')
       .select('twitter_username, twitter_id')
       .eq('id', ctx.session.user.id)
@@ -128,7 +130,7 @@ export const leaderboardRouter = createTRPCRouter({
     }
 
     // Get user's total score from database
-    const { data: userMentions } = await ctx.supabaseAdmin
+    const { data: userMentions } = await supabaseAdmin
       .from('twitter_mentions')
       .select('score')
       .eq('user_id', ctx.session.user.id)
@@ -151,7 +153,7 @@ export const leaderboardRouter = createTRPCRouter({
       cacheKey,
       async () => {
         // This will use the new scored leaderboard from getTopMentioners
-        const { data: allMentions } = await ctx.supabaseAdmin
+        const { data: allMentions } = await supabaseAdmin
           .from('twitter_mentions')
           .select('twitter_user_id, twitter_username, score, user_id')
         
