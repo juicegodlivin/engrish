@@ -9,10 +9,15 @@ import { Card, CardContent } from '~/components/ui/card'
 import type { Database } from '~/types/database'
 
 type GeneratedImage = Database['public']['Tables']['generated_images']['Row']
+type User = { name: string | null; avatar: string | null; wallet_address: string }
+
+type GalleryImage = GeneratedImage & {
+  users: User
+}
 
 export default function GalleryPage() {
   const { data, isLoading } = trpc.image.getPublicGallery.useQuery({ limit: 30 })
-  const images: GeneratedImage[] = (data?.items as GeneratedImage[]) || []
+  const images: GalleryImage[] = (data?.items as GalleryImage[]) || []
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background-darker to-background-dark">
