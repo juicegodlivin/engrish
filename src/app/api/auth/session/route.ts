@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import { getUserByWalletAddress } from '~/server/db/client'
+import type { Database } from '~/types/database'
+
+type User = Database['public']['Tables']['users']['Row']
 
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production')
 
@@ -20,13 +23,14 @@ export async function GET(req: NextRequest) {
     console.log('✅ JWT valid for wallet:', payload.walletAddress)
 
     // Get fresh user data from Supabase
-    const user = await getUserByWalletAddress(payload.walletAddress as string)
+    const userData = await getUserByWalletAddress(payload.walletAddress as string)
 
-    if (!user) {
+    if (!userData) {
       console.log('❌ User not found in database')
       return NextResponse.json({ user: null })
     }
 
+    const user: User = userData as User
     console.log('✅ Session valid for user:', user.id)
 
     return NextResponse.json({

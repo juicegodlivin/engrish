@@ -4,6 +4,9 @@ import nacl from 'tweetnacl'
 import bs58 from 'bs58'
 import { getUserByWalletAddress, upsertUser } from '~/server/db/client'
 import { SignJWT } from 'jose'
+import type { Database } from '~/types/database'
+
+type User = Database['public']['Tables']['users']['Row']
 
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production')
 
@@ -49,17 +52,19 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create user in Supabase
-    let user = await getUserByWalletAddress(publicKey)
+    let userData = await getUserByWalletAddress(publicKey)
     
-    if (!user) {
+    if (!userData) {
       console.log('User not found, creating new user...')
-      user = await upsertUser(publicKey, {
+      userData = await upsertUser(publicKey, {
         name: `User ${publicKey.slice(0, 4)}`,
       })
-      console.log('User created:', user.id)
+      console.log('User created:', userData.id)
     } else {
-      console.log('User found:', user.id)
+      console.log('User found:', userData.id)
     }
+
+    const user: User = userData as User
 
     // Create JWT
     const token = await new SignJWT({
