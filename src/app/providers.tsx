@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { trpc, createTRPCClient } from '~/lib/trpc-client'
 import { WalletProvider } from '~/components/wallet/wallet-provider'
-import { AuthHandler } from '~/components/wallet/auth-handler'
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -25,7 +24,6 @@ export function Providers({ children }: { children: ReactNode }) {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <WalletProvider>
-          <AuthHandler />
           {children}
         </WalletProvider>
       </QueryClientProvider>
