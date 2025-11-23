@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '~/types/database'
 
 // Get environment variables
@@ -19,7 +19,7 @@ if (!isSupabaseConfigured) {
  * Uses anon key with RLS policies
  * Returns null if not configured
  */
-export const supabase: ReturnType<typeof createClient<Database>> | null = isSupabaseConfigured
+export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
   ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         persistSession: false, // We use NextAuth for session management
@@ -31,7 +31,7 @@ export const supabase: ReturnType<typeof createClient<Database>> | null = isSupa
  * Supabase admin client for server-side operations
  * Bypasses RLS policies - use with caution!
  */
-export const supabaseAdmin: ReturnType<typeof createClient<Database>> | null =
+export const supabaseAdmin: SupabaseClient<Database> | null =
   isSupabaseConfigured && supabaseServiceKey
     ? createClient<Database>(supabaseUrl!, supabaseServiceKey, {
         auth: {
