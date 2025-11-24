@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Sans_JP, Noto_Serif } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
+import { MusicPlayer } from '~/components/music-player/music-player'
 
 const notoSansJP = Noto_Sans_JP({ 
   subsets: ['latin'],
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <Providers>
           {children}
+          <MusicPlayer />
         </Providers>
       </body>
     </html>
