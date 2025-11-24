@@ -1,24 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter, Poppins, JetBrains_Mono } from 'next/font/google'
+import { Noto_Sans_JP, Noto_Serif } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const poppins = Poppins({ 
+const notoSansJP = Noto_Sans_JP({ 
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-poppins',
+  variable: '--font-noto-sans-jp',
   display: 'swap',
 })
 
-const jetbrainsMono = JetBrains_Mono({ 
+const notoSerif = Noto_Serif({ 
   subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
+  weight: ['400', '600', '700'],
+  variable: '--font-noto-serif',
   display: 'swap',
 })
 
@@ -53,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${notoSansJP.variable} ${notoSerif.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
           {children}

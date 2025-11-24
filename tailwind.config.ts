@@ -42,9 +42,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Poppins', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['var(--font-noto-serif)', 'serif'],
+        display: ['var(--font-noto-sans-jp)', 'sans-serif'],
+        mono: ['ui-monospace', 'monospace'],
       },
       fontSize: {
         'display-1': ['7rem', { lineHeight: '1', fontWeight: '700' }],
